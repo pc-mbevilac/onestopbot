@@ -9,7 +9,13 @@ class OneStopBot extends ActivityHandler {
 
 		this.state = {};
 
-		this.setState = this.setState.bind(this);
+		this.default = MessageFactory.suggestedActions(
+			['How do I apply?', 'Can I schedule a visit?', 'Can you tell me more about PC?'],
+			'Hi! Thanks for reaching out? How can I help you?'
+		);
+
+		this.previous = this.default;
+
 		this.firstInteraction = true;
 
 		// this.onMembersAdded(async (context, next) => {
@@ -57,14 +63,15 @@ class OneStopBot extends ActivityHandler {
 	}
 
 	async handleMessage(message, turnContext) {
-		let reply = "Sorry, I didn't quite understand. Let's connect in person.";
+		let reply = MessageFactory.suggestedActions(
+			['How do I apply?', 'Can I schedule a visit?', 'Can you tell me more about PC?', 'Connect with a person'],
+			'Sure! How can I help you?'
+		);
+
 		let answered = false;
 
 		if (message == 'Go back') {
-			reply = MessageFactory.suggestedActions(
-				['How do I apply?', 'Can I schedule a visit?', 'Can you tell me more about PC?'],
-				'Sure! How can I help you?'
-			);
+			reply = this.previous;
 
 			await turnContext.sendActivity(reply);
 		}
@@ -126,6 +133,7 @@ class OneStopBot extends ActivityHandler {
 		}
 
 		if (!answered) {
+			this.previous = reply;
 			turnContext.sendActivity(reply);
 		}
 	}
