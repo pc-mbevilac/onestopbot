@@ -12,46 +12,42 @@ class OneStopBot extends ActivityHandler {
 		this.setState = this.setState.bind(this);
 		this.firstInteraction = true;
 
-		this.onMembersAdded(async (context, next) => {
-			const membersAdded = context.activity.membersAdded;
-			for (let cnt = 0; cnt < membersAdded.length; ++cnt) {
-				if (membersAdded[cnt].id !== context.activity.recipient.id) {
-					var reply = MessageFactory.suggestedActions(
-						['How do I apply?', 'Can I schedule a visit?', 'Can you tell me more about PC?'],
-						'Hi! Thanks for reaching out? How can I help you?'
-					);
+		// this.onMembersAdded(async (context, next) => {
+		// 	const membersAdded = context.activity.membersAdded;
+		// 	for (let cnt = 0; cnt < membersAdded.length; ++cnt) {
+		// 		if (membersAdded[cnt].id !== context.activity.recipient.id) {
+		// 			var reply = MessageFactory.suggestedActions(
+		// 				['How do I apply?', 'Can I schedule a visit?', 'Can you tell me more about PC?'],
+		// 				'Hi! Thanks for reaching out? How can I help you?'
+		// 			);
 
-					await context.sendActivity(reply);
-				}
-			}
-			// By calling next() you ensure that the next BotHandler is run.
-			await next();
-		});
+		// 			await context.sendActivity(reply);
+		// 		}
+		// 	}
+		// 	// By calling next() you ensure that the next BotHandler is run.
+		// 	await next();
+		// });
 
-		const handleMessage = this.handleMessage;
+		//const handleMessage = this.handleMessage;
 		let firstInteraction = this.firstInteraction;
 
 		this.onTurn(async (context, next) => {
-			if (context.activity.type === 'message') {
-				const message = context.activity.text;
+			if (firstInteraction) {
+				var reply = MessageFactory.suggestedActions(
+					['How do I apply?', 'Can I schedule a visit?', 'Can you tell me more about PC?'],
+					'Hi! Thanks for reaching out? How can I help you?'
+				);
 
-				if (firstInteraction) {
-					if (message.toLowerCase().search('apply') > 0 || message.toLowerCase().search('application') > 0) {
-						await handleMessage('How do I apply?', context);
-					}
+				firstInteraction = false;
 
-					var reply = MessageFactory.suggestedActions(
-						['How do I apply?', 'Can I schedule a visit?', 'Can you tell me more about PC?'],
-						'Hi! Thanks for reaching out? How can I help you?'
-					);
-
-					firstInteraction = false;
-
-					await context.sendActivity(reply);
-				} else {
+				await context.sendActivity(reply);
+			} else {
+				if (context.activity.type === 'message') {
+					const message = context.activity.text;
 					this.handleMessage(message, context);
 				}
 			}
+
 			await next();
 		});
 	}
